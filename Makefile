@@ -12,14 +12,21 @@ help:              ## show this help
 build:             ## build docker image (e.g. to rebuild image cache)
 	@docker build --tag $(app_name) .
 
+.PHONY: run-demo
+run-demo: build    ## runs demo presentation of score-board
+	@docker run --rm -it $(app_name) demo
+
+.PHONY: run-ui
+run-ui: build      ## runs score-board in interactive mode
+	@docker run --rm -it $(app_name) ui
+
 .PHONY: run
-run: build         ## runs score-board
-	@docker run --rm -it $(app_name)
+run: run-ui        ## runs score-board in default (interactive) mode
 
 # testing
 
-.PHONY: test       ## run tests
-test:
+.PHONY: test
+test:              ## run tests
 	@docker run --rm -v $(pwd):/app -w /app golang:1.22.2-alpine3.18 go test ./... -v
 
 # Linters and formatters
