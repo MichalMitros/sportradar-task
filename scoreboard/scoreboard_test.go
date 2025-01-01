@@ -81,13 +81,16 @@ func TestUnitHandleEvent(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			scoreBoard := scoreboard.New()
-			errors := make([]error, len(tt.events))
+			events, errors, middleware := testMiddleware(t)
+			scoreBoard.Use(middleware)
 
-			for ix, event := range tt.events {
-				errors[ix] = scoreBoard.HandleEvent(event)
+			for _, event := range tt.events {
+				// errors will be stored by middleware - no need to check them here.
+				_ = scoreBoard.HandleEvent(event)
 			}
 
-			assert.Equal(t, tt.expectedErrors, errors, "should return correct errors")
+			assert.Equal(t, tt.events, *events, "should return correct events history")
+			assert.Equal(t, tt.expectedErrors, *errors, "should return correct errors history")
 		})
 	}
 }
@@ -139,5 +142,19 @@ func TestUnitGetSummary(t *testing.T) {
 
 			assert.Equal(t, tt.expected, scoreBoard.GetSummary(), "should return correct summary")
 		})
+	}
+}
+
+// testMiddleware return test middleware with history of events and returned errors (also nils) updated for each event.
+func testMiddleware(t *testing.T) (*[]scoreboard.Event, *[]error, scoreboard.Middleware) {
+	t.Helper()
+	events := []scoreboard.Event{}
+	errors := []error{}
+
+	return &events, &errors, func(event scoreboard.Event, next func(event scoreboard.Event) error) error {
+		events = append(events, event)
+		err := next(event)
+		errors = append(errors, err)
+		return err
 	}
 }
