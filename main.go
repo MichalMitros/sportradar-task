@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MichalMitros/sportradar-task/scoreboard"
+	"github.com/MichalMitros/sportradar-task/ui"
 )
 
 func main() {
@@ -41,4 +42,12 @@ func main() {
 	_ = scoreBoard.HandleEvent(scoreboard.Event{Type: scoreboard.FinishEvent, HomeTeam: "Germany", AwayTeam: "France"})
 
 	fmt.Println(scoreBoard.GetSummary())
+
+	scoreBoard = scoreboard.New()
+	scoreBoard.Use(scoreboard.LoggingMiddleware)
+
+	view := ui.New(scoreBoard)
+	for {
+		view.Show()
+	}
 }
