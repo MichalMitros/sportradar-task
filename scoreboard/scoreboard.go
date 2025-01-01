@@ -12,10 +12,12 @@ import (
 // EventType represents types of events.
 type EventType string
 
-// Event types.
 const (
-	StartEvent  EventType = "start"
+	// StartEvent starts new game, requires home and away teams names.
+	StartEvent EventType = "start"
+	// FinishEvent finishes ongoing game, requires home and away teams names.
 	FinishEvent EventType = "finish"
+	// UpdateEvent updates ongoing game's scores, requires home and away teams names and scores.
 	UpdateEvent EventType = "update"
 )
 
