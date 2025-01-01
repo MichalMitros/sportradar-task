@@ -1,0 +1,17 @@
+name: test
+
+on: [push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: test
+        run: docker run --rm -v $(pwd):/app -w /app golang:1.22.2-alpine3.18 go test ./... -v
