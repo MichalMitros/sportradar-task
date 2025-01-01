@@ -37,20 +37,51 @@ type Event struct {
 	AwayScore int
 }
 
+// Middleware adds functionalities to events handling.
+type Middleware func(event Event, next func(event Event) error) error
+
 // ScoreBoard stores matches and handles events.
 type ScoreBoard struct {
-	matches map[string]*Match
+	matches     map[string]*Match
+	middlewares []Middleware
 }
 
 // New returns new ScoreBoard.
 func New() *ScoreBoard {
 	return &ScoreBoard{
-		matches: make(map[string]*Match),
+		matches:     make(map[string]*Match),
+		middlewares: []Middleware{},
 	}
 }
 
-// HandleEvent handles start, update and finish events.
+// Use adds middleware to ScoreBoard.
+func (s *ScoreBoard) Use(middleware Middleware) {
+	s.middlewares = append(s.middlewares, middleware)
+}
+
+// HandleEvent handles events and applies middlewares.
 func (s *ScoreBoard) HandleEvent(event Event) error {
+	chain := s.buildMiddlewareChain()
+	return chain(event)
+}
+
+func (s *ScoreBoard) buildMiddlewareChain() func(event Event) error {
+	handler := func(event Event) error {
+		return s.processEvent(event)
+	}
+
+	for i := len(s.middlewares) - 1; i >= 0; i-- {
+		currentMiddleware := s.middlewares[i]
+		next := handler
+		handler = func(event Event) error {
+			return currentMiddleware(event, next)
+		}
+	}
+
+	return handler
+}
+
+func (s *ScoreBoard) processEvent(event Event) error {
 	switch event.Type {
 	case StartEvent:
 		return s.startGame(event.HomeTeam, event.AwayTeam)
