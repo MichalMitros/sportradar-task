@@ -8,6 +8,7 @@ import (
 
 func main() {
 	scoreBoard := scoreboard.New()
+	scoreBoard.Use(scoreboard.LoggingMiddleware)
 
 	_ = scoreBoard.HandleEvent(scoreboard.Event{Type: scoreboard.StartEvent, HomeTeam: "Mexico", AwayTeam: "Canada"})
 	_ = scoreBoard.HandleEvent(scoreboard.Event{Type: scoreboard.StartEvent, HomeTeam: "Spain", AwayTeam: "Brazil"})
